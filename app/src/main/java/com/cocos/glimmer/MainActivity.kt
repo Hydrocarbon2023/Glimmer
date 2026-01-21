@@ -6,7 +6,7 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.animation.core.*
 import androidx.compose.foundation.background
-// import androidx.compose.foundation.Canvas
+import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
@@ -19,13 +19,14 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.draw.blur
 import androidx.compose.ui.draw.clip
-// import androidx.compose.ui.geometry.CornerRadius
-// import androidx.compose.ui.geometry.Offset
-// import androidx.compose.ui.geometry.Size
+import androidx.compose.ui.geometry.CornerRadius
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.modifier.ModifierLocal
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -64,20 +65,28 @@ fun OceanScreen(viewModel: OceanViewModel) {
         }
     }
 
-    Box(
+    BoxWithConstraints(
         modifier = Modifier.fillMaxSize()
             .background(Brush.verticalGradient(listOf(DeepSeaStart, DeepSeaEnd)))
     ) {
+        val maxWidth = maxWidth
+        val maxHeight = maxHeight
+
         uiState.bottles.forEach { bottle ->
             key(bottle.id) {
-                DriftingBottleNode(bottle) {
-                    if (uiState.dailyPicksLeft > 0) {
-                        viewModel.tryToPickBottle(bottle.id)
-                        pickedBottle = bottle
-                    } else {
-                        viewModel.tryToPickBottle(bottle.id)
+                DriftingBottleNode(
+                    bottle = bottle,
+                    parentWidth = maxWidth.value,
+                    parentHeight = maxHeight.value,
+                    onClick = {
+                        if (uiState.dailyPicksLeft > 0) {
+                            viewModel.tryToPickBottle(bottle.id)
+                            pickedBottle = bottle
+                        } else {
+                            viewModel.tryToPickBottle(bottle.id)
+                        }
                     }
-                }
+                )
             }
         }
 
@@ -119,14 +128,23 @@ fun OceanScreen(viewModel: OceanViewModel) {
 }
 
 @Composable
-fun DriftingBottleNode(bottle: Bottle, onClick: () -> Unit) {
-    val randomX = remember { Random.nextFloat() }
-    val randomY = remember { Random.nextFloat() }
+fun DriftingBottleNode(
+    bottle: Bottle,
+    parentWidth: Float,
+    parentHeight: Float,
+    onClick: () -> Unit
+) {
+    val randomX = remember { 0.8f*parentWidth*Random.nextFloat() + 0.1f*parentWidth }
+    val randomY = remember { 0.8f*parentHeight*Random.nextFloat() + 0.1f*parentHeight }
+
+    val randomSize = remember { Random.nextInt(20, 45).dp }
+
+    val randomRotation = remember { 40f*Random.nextFloat() - 20f }
 
     val infiniteTransition = rememberInfiniteTransition(label = "float")
     val offsetY by infiniteTransition.animateFloat(
-        initialValue = -20f,
-        targetValue = 20f,
+        initialValue = -15f,
+        targetValue = 15f,
         animationSpec = infiniteRepeatable(
             animation = tween(2000 + Random.nextInt(1000), easing = EaseInOutSine),
             repeatMode = RepeatMode.Reverse
@@ -135,26 +153,52 @@ fun DriftingBottleNode(bottle: Bottle, onClick: () -> Unit) {
     )
 
     Box(
-        modifier = Modifier.fillMaxSize()
-            .wrapContentSize(align = Alignment.TopStart)
+        modifier = Modifier.offset(x = randomX.dp, y = randomY.dp + offsetY.dp)
+            .size(randomSize)
             .graphicsLayer {
-                val screenWidth = this.size.width
-                val screenHeight = this.size.height
-                translationX = 0.1f*screenWidth + 0.8f*screenWidth*randomX
-                translationY = 0.1f*screenHeight + 0.8f*screenHeight*randomY + offsetY
+                rotationZ = randomRotation
             }
             .clickable { onClick() }
     ) {
+        BottleIcon(
+            color = Color(bottle.moodColor),
+            modifier = Modifier.fillMaxSize()
+        )
         Box(
-            modifier = Modifier.size(12.dp)
-                .background(Color(bottle.moodColor), CircleShape)
+            modifier = Modifier.align(Alignment.Center)
+                .size(randomSize*0.6f)
+                .background(Color.White.copy(alpha = 0.3f), CircleShape)
                 .blur(8.dp)
         )
-        Icon(
-            imageVector = Icons.Default.Favorite,
-            contentDescription = null,
-            tint = Color(bottle.moodColor).copy(alpha = 0.8f),
-            modifier = Modifier.size(24.dp)
+    }
+}
+
+@Composable
+fun BottleIcon(
+    color: Color,
+    modifier: Modifier = Modifier
+) {
+    Canvas(modifier = modifier) {
+        val width = size.width
+        val height = size.height
+
+        drawRoundRect(
+            color = color,
+            topLeft = Offset(0f, 0.35f*height),
+            size = Size(width, 0.65f*height),
+            cornerRadius = CornerRadius(0.2f*width, 0.2f*width)
+        )
+
+        drawRect(
+            color = color,
+            topLeft = Offset(0.3f*width, 0f),
+            size = Size(0.4f*width, 0.4f*height)
+        )
+
+        drawRect(
+            color = color.copy(alpha = 0.5f),
+            topLeft = Offset(0.25f*width, 0f),
+            size = Size(0.5f*width, 0.1f*height)
         )
     }
 }
