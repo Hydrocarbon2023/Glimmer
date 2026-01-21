@@ -1,0 +1,32 @@
+# --- 编译产物 ---
+**/build/
+bin/
+gen/
+
+# --- 本地环境配置 ---
+local.properties
+.gradle
+.navigation/
+
+# --- IDE专属文件 ---
+.idea/workspace.xml
+.idea/libraries
+.idea/modules.xml
+.idea/navEditor.xml
+.idea/assetWizardSettings.xml
+*.iml
+*.ipr
+*.iws
+
+# --- 签名与安全 ---
+*.jks
+*.keystore
+*.p12
+*.properties
+
+# --- 系统相关 ---
+.DS_Store
+Thumbs.db
+
+# --- 捕捉特定日志 ---
+captures/
