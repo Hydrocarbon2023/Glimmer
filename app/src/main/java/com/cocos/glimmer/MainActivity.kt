@@ -38,6 +38,39 @@ val DeepSeaStart = Color(0xFF0D1b2A)
 val DeepSeaEnd = Color(0xFF1B263B)
 val GlimmerGold = Color(0xFFFFD700)
 
+@Composable
+fun BottleIcon(
+    color: Color,
+    modifier: Modifier = Modifier
+) {
+    Canvas(modifier = modifier) {
+        val w = size.width
+        val h = size.height
+
+        drawRoundRect(
+            color = color,
+            topLeft = Offset(w*0.1f, h*0.2f),
+            size = Size(w*0.8f, h*0.8f),
+            cornerRadius = CornerRadius(w*0.15f, w*0.15f)
+        )
+
+        drawRoundRect(
+            color = color,
+            topLeft = Offset(w*0.15f, 0f),
+            size = Size(w*0.7f, h*0.18f),
+            cornerRadius = CornerRadius(w*0.05f, w*0.05f)
+        )
+
+        drawLine(
+            color = Color.White.copy(alpha = 0.4f),
+            start = Offset(w*0.25f, h*0.3f),
+            end = Offset(w*0.25f, h*0.85f),
+            strokeWidth = w*0.08f,
+            cap = androidx.compose.ui.graphics.StrokeCap.Round
+        )
+    }
+}
+
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -134,12 +167,13 @@ fun DriftingBottleNode(
     parentHeight: Float,
     onClick: () -> Unit
 ) {
-    val randomX = remember { 0.8f*parentWidth*Random.nextFloat() + 0.1f*parentWidth }
-    val randomY = remember { 0.8f*parentHeight*Random.nextFloat() + 0.1f*parentHeight }
+    val randomX = remember { Random.nextFloat()*parentWidth*0.8f + parentWidth*0.1f }
+    val randomY = remember { Random.nextFloat()*parentHeight*0.8f + parentHeight*0.1f }
 
-    val randomSize = remember { Random.nextInt(20, 45).dp }
+    val randomWidth = remember { Random.nextInt(20, 45).dp }
+    val randomHeight = randomWidth*1.6f
 
-    val randomRotation = remember { 40f*Random.nextFloat() - 20f }
+    val randomRotation = remember { Random.nextFloat()*40f - 20f }
 
     val infiniteTransition = rememberInfiniteTransition(label = "float")
     val offsetY by infiniteTransition.animateFloat(
@@ -154,7 +188,8 @@ fun DriftingBottleNode(
 
     Box(
         modifier = Modifier.offset(x = randomX.dp, y = randomY.dp + offsetY.dp)
-            .size(randomSize)
+            .width(randomWidth)
+            .height(randomHeight)
             .graphicsLayer {
                 rotationZ = randomRotation
             }
@@ -166,39 +201,12 @@ fun DriftingBottleNode(
         )
         Box(
             modifier = Modifier.align(Alignment.Center)
-                .size(randomSize*0.6f)
+                .align(Alignment.Center)
+                .width(randomWidth*0.6f)
+                .height(randomHeight*0.6f)
+                .clip(CircleShape)
                 .background(Color.White.copy(alpha = 0.3f), CircleShape)
                 .blur(8.dp)
-        )
-    }
-}
-
-@Composable
-fun BottleIcon(
-    color: Color,
-    modifier: Modifier = Modifier
-) {
-    Canvas(modifier = modifier) {
-        val width = size.width
-        val height = size.height
-
-        drawRoundRect(
-            color = color,
-            topLeft = Offset(0f, 0.35f*height),
-            size = Size(width, 0.65f*height),
-            cornerRadius = CornerRadius(0.2f*width, 0.2f*width)
-        )
-
-        drawRect(
-            color = color,
-            topLeft = Offset(0.3f*width, 0f),
-            size = Size(0.4f*width, 0.4f*height)
-        )
-
-        drawRect(
-            color = color.copy(alpha = 0.5f),
-            topLeft = Offset(0.25f*width, 0f),
-            size = Size(0.5f*width, 0.1f*height)
         )
     }
 }
