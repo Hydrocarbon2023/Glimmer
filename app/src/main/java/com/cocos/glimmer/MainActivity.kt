@@ -4,19 +4,58 @@ import android.os.Bundle
 import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
-import androidx.compose.animation.core.*
-import androidx.compose.foundation.background
+import androidx.compose.animation.core.EaseInOutSine
+import androidx.compose.animation.core.RepeatMode
+import androidx.compose.animation.core.animateFloat
+import androidx.compose.animation.core.infiniteRepeatable
+import androidx.compose.animation.core.rememberInfiniteTransition
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Canvas
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxWithConstraints
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.offset
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.icons.filled.Add
-import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.Icons
-import androidx.compose.material3.*
-import androidx.compose.runtime.*
+import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.Edit
+import androidx.compose.material.icons.filled.Favorite
+import androidx.compose.material.icons.filled.FavoriteBorder
+import androidx.compose.material.icons.filled.Notifications
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.Badge
+import androidx.compose.material3.BadgedBox
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.FloatingActionButton
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.key
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.blur
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.geometry.CornerRadius
@@ -25,18 +64,20 @@ import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.modifier.ModifierLocal
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.zIndex
 import androidx.lifecycle.viewmodel.compose.viewModel
-import androidx.navigation.compose.composable
+import androidx.navigation.NavController
+import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
+import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import androidx.navigation.navArgument
 import kotlin.random.Random
 
+val CoralPink = Color(0xFFFF6F61)
 val DeepSeaStart = Color(0xFF0D1b2A)
 val DeepSeaEnd = Color(0xFF1B263B)
 val GlimmerGold = Color(0xFFFFD700)
@@ -93,7 +134,20 @@ class MainActivity : ComponentActivity() {
                     }
 
                     composable("ocean") {
-                        OceanScreen(viewModel)
+                        OceanScreen(viewModel, navController)
+                    }
+
+                    composable("notifications") {
+                        NotificationScreen(navController)
+                    }
+
+                    composable(
+                        route = "chat/{bottleId}",
+                        arguments = listOf(navArgument("bottleId") { type = NavType.StringType })
+                    ) { backStackEntry ->
+                        val bottleId = backStackEntry
+                            .arguments?.getString("bottleId") ?: return@composable
+                        ChatScreen(navController, bottleId)
                     }
                 }
             }
@@ -101,8 +155,9 @@ class MainActivity : ComponentActivity() {
     }
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun OceanScreen(viewModel: OceanViewModel) {
+fun OceanScreen(viewModel: OceanViewModel, navController: NavController) {
     val uiState by viewModel.uiState.collectAsState()
     val context = LocalContext.current
 
@@ -122,6 +177,35 @@ fun OceanScreen(viewModel: OceanViewModel) {
     ) {
         val maxWidth = maxWidth
         val maxHeight = maxHeight
+
+        Row(
+            modifier = Modifier.fillMaxWidth()
+                .padding(top = 48.dp, end = 24.dp)
+                .zIndex(1f),
+            horizontalArrangement = Arrangement.End
+        ) {
+            IconButton(onClick = { navController.navigate("notifications") }) {
+                if (SimulationDB.notifications.isNotEmpty()) {
+                    BadgedBox(
+                        badge = { Badge { Text(SimulationDB.notifications.size.toString()) } }
+                    ) {
+                        Icon(
+                            Icons.Default.Notifications,
+                            contentDescription = "Alerts",
+                            tint = GlimmerGold,
+                            modifier = Modifier.size(32.dp)
+                        )
+                    }
+                } else {
+                    Icon(
+                        Icons.Default.Notifications,
+                        contentDescription = "Alerts",
+                        tint = GlimmerGold,
+                        modifier = Modifier.size(32.dp)
+                    )
+                }
+            }
+        }
 
         uiState.bottles.forEach { bottle ->
             key(bottle.id) {
@@ -172,6 +256,7 @@ fun OceanScreen(viewModel: OceanViewModel) {
         pickedBottle?.let { bottle ->
             ReadDialog(
                 bottle = bottle,
+                navController = navController,
                 onDismiss = { pickedBottle = null }
             )
         }
@@ -255,7 +340,7 @@ fun WriteDialog(onDismiss: () -> Unit, onSend: (String) -> Unit) {
 }
 
 @Composable
-fun ReadDialog(bottle: Bottle, onDismiss: () -> Unit) {
+fun ReadDialog(bottle: Bottle, navController: NavController, onDismiss: () -> Unit) {
     AlertDialog(
         onDismissRequest = onDismiss,
         containerColor = DeepSeaStart.copy(alpha = 0.9f),
@@ -263,17 +348,57 @@ fun ReadDialog(bottle: Bottle, onDismiss: () -> Unit) {
         text = {
             Column {
                 Text(text = bottle.content, color = Color.White, fontSize = 18.sp)
-                Spacer(modifier = Modifier.height(16.dp))
-                Text(text = "—— ${bottle.senderName}", color = Color.Gray, fontSize = 12.sp)
+                Spacer(modifier = Modifier.height(8.dp))
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Text(text = "—— ${bottle.senderName}", color = Color.Gray, fontSize = 12.sp)
+                    Spacer(modifier = Modifier.weight(1f))
+                    Icon(
+                        Icons.Default.Favorite,
+                        contentDescription = null,
+                        tint = CoralPink,
+                        modifier = Modifier.size(14.dp)
+                    )
+                    Text(text = "${bottle.likes}", color = CoralPink, fontSize = 12.sp)
+                }
             }
         },
         confirmButton = {
-            Button(
-                onClick = onDismiss,
-                colors = ButtonDefaults
-                    .buttonColors(containerColor = GlimmerGold, contentColor = DeepSeaStart)
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceEvenly
             ) {
-                Text("收下温暖")
+                Button(
+                    onClick = {
+                        SimulationDB.likeBottle(bottle)
+                        onDismiss()
+                    },
+                    colors = ButtonDefaults.buttonColors(containerColor = CoralPink)
+                ) {
+                    Icon(Icons.Default.FavoriteBorder, contentDescription = null)
+                    Spacer(modifier = Modifier.width(4.dp))
+                    Text("喜欢")
+                }
+
+                Button(
+                    onClick = {
+                        onDismiss()
+                        navController.navigate("chat/${bottle.id}")
+                    },
+                    colors = ButtonDefaults
+                        .buttonColors(containerColor = GlimmerGold, contentColor = DeepSeaStart)
+                ) {
+                    Icon(Icons.Default.Edit, contentDescription = null)
+                    Spacer(modifier = Modifier.width(4.dp))
+                    Text("回复")
+                }
+
+                Button(
+                    onClick = onDismiss,
+                    colors = ButtonDefaults
+                        .buttonColors(containerColor = GlimmerGold, contentColor = DeepSeaStart)
+                ) {
+                    Text("收下温暖")
+                }
             }
         }
     )
