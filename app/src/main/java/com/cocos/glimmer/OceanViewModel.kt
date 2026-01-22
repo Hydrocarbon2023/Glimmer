@@ -32,7 +32,14 @@ class OceanViewModel : ViewModel() {
     }
 
     fun throwBottle(content: String) {
-        val newBottle = Bottle(content = content, isMine = true)
+        val username = AuthManager.currentUser ?: "Anonymous"
+
+        val newBottle = Bottle(
+            content = content,
+            senderName = username,
+            isMine = true
+        )
+
         _uiState.update { currentState ->
             currentState.copy(
                 bottles = currentState.bottles + newBottle,
