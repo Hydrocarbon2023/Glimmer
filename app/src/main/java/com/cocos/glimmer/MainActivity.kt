@@ -17,6 +17,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -27,6 +28,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Edit
@@ -65,6 +67,7 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.zIndex
@@ -75,12 +78,17 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
+import com.cocos.glimmer.ui.theme.CoralPink
+import com.cocos.glimmer.ui.theme.DeepSeaEnd
+import com.cocos.glimmer.ui.theme.DeepSeaStart
+import com.cocos.glimmer.ui.theme.GlimmerGold
+import com.cocos.glimmer.ui.theme.OceanGray
+import com.cocos.glimmer.ui.theme.SeaFoamWhite
+import com.cocos.glimmer.ui.theme.SunSandYellow
+import com.cocos.glimmer.ui.theme.TranslucentBg
+import com.cocos.glimmer.ui.theme.TropicalSeaEnd
+import com.cocos.glimmer.ui.theme.TropicalSeaStart
 import kotlin.random.Random
-
-val CoralPink = Color(0xFFFF6F61)
-val DeepSeaStart = Color(0xFF0D1b2A)
-val DeepSeaEnd = Color(0xFF1B263B)
-val GlimmerGold = Color(0xFFFFD700)
 
 @Composable
 fun BottleIcon(
@@ -173,7 +181,7 @@ fun OceanScreen(viewModel: OceanViewModel, navController: NavController) {
 
     BoxWithConstraints(
         modifier = Modifier.fillMaxSize()
-            .background(Brush.verticalGradient(listOf(DeepSeaStart, DeepSeaEnd)))
+            .background(Brush.verticalGradient(listOf(TropicalSeaEnd, TropicalSeaStart)))
     ) {
         val maxWidth = maxWidth
         val maxHeight = maxHeight
@@ -343,40 +351,62 @@ fun WriteDialog(onDismiss: () -> Unit, onSend: (String) -> Unit) {
 fun ReadDialog(bottle: Bottle, navController: NavController, onDismiss: () -> Unit) {
     AlertDialog(
         onDismissRequest = onDismiss,
-        containerColor = DeepSeaStart.copy(alpha = 0.9f),
-        title = { Text("来自远方的微光", color = GlimmerGold) },
+        containerColor = TranslucentBg,
+        shape = RoundedCornerShape(24.dp),
+        title = {
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Text(
+                    text = "来自远方的微光",
+                    color = GlimmerGold,
+                    fontWeight = FontWeight.Bold,
+                    fontSize = 20.sp
+                )
+                Spacer(Modifier.weight(1f))
+                Icon(
+                    Icons.Default.Favorite,
+                    contentDescription = null,
+                    tint = CoralPink,
+                    modifier = Modifier.size(16.dp)
+                )
+                Text(text = " ${bottle.likes}", color = CoralPink, fontSize = 14.sp)
+            }
+        },
         text = {
             Column {
-                Text(text = bottle.content, color = Color.White, fontSize = 18.sp)
-                Spacer(modifier = Modifier.height(8.dp))
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    Text(text = "—— ${bottle.senderName}", color = Color.Gray, fontSize = 12.sp)
-                    Spacer(modifier = Modifier.weight(1f))
-                    Icon(
-                        Icons.Default.Favorite,
-                        contentDescription = null,
-                        tint = CoralPink,
-                        modifier = Modifier.size(14.dp)
-                    )
-                    Text(text = "${bottle.likes}", color = CoralPink, fontSize = 12.sp)
-                }
+                Text(
+                    text = bottle.content,
+                    color = SeaFoamWhite,
+                    fontSize = 17.sp,
+                    lineHeight = 26.sp,
+                    modifier = Modifier.padding(vertical = 8.dp)
+                )
+                Spacer(modifier = Modifier.height(16.dp))
+                Text(
+                    text = "—— ${bottle.senderName}",
+                    color = OceanGray,
+                    fontSize = 13.sp,
+                    modifier = Modifier.align(Alignment.End)
+                )
             }
         },
         confirmButton = {
             Row(
                 modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceEvenly
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
             ) {
-                Button(
+                IconButton(
                     onClick = {
                         SimulationDB.likeBottle(bottle)
-                        onDismiss()
                     },
-                    colors = ButtonDefaults.buttonColors(containerColor = CoralPink)
+                    modifier = Modifier.size(48.dp)
+                        .background(Color.White.copy(0.1f), CircleShape)
                 ) {
-                    Icon(Icons.Default.FavoriteBorder, contentDescription = null)
-                    Spacer(modifier = Modifier.width(4.dp))
-                    Text("喜欢")
+                    Icon(
+                        imageVector = Icons.Default.FavoriteBorder,
+                        contentDescription = "Like",
+                        tint = CoralPink
+                    )
                 }
 
                 Button(
@@ -385,19 +415,25 @@ fun ReadDialog(bottle: Bottle, navController: NavController, onDismiss: () -> Un
                         navController.navigate("chat/${bottle.id}")
                     },
                     colors = ButtonDefaults
-                        .buttonColors(containerColor = GlimmerGold, contentColor = DeepSeaStart)
+                        .buttonColors(containerColor = GlimmerGold, contentColor = DeepSeaStart),
+                    contentPadding = PaddingValues(horizontal = 24.dp),
+                    modifier = Modifier.height(48.dp)
                 ) {
-                    Icon(Icons.Default.Edit, contentDescription = null)
-                    Spacer(modifier = Modifier.width(4.dp))
-                    Text("回复")
+                    Icon(
+                        imageVector = Icons.Default.Edit,
+                        contentDescription = null,
+                        modifier = Modifier.size(18.dp)
+                    )
+                    Spacer(Modifier.width(8.dp))
+                    Text("回复", fontWeight = FontWeight.Bold)
                 }
 
-                Button(
+                TextButton(
                     onClick = onDismiss,
                     colors = ButtonDefaults
-                        .buttonColors(containerColor = GlimmerGold, contentColor = DeepSeaStart)
+                        .buttonColors(containerColor = OceanGray, contentColor = DeepSeaStart)
                 ) {
-                    Text("收下温暖")
+                    Text("收下温暖", color = SeaFoamWhite.copy(0.7f))
                 }
             }
         }

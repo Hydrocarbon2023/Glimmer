@@ -2,10 +2,18 @@ package com.cocos.glimmer.ui.theme
 
 import androidx.compose.ui.graphics.Color
 
-val Purple80 = Color(0xFFD0BCFF)
-val PurpleGrey80 = Color(0xFFCCC2DC)
-val Pink80 = Color(0xFFEFB8C8)
+val CoralPink = Color(0xFFFF6B6B)
+val DeepSeaStart = Color(0xFF0D1b2A)
+val DeepSeaEnd = Color(0xFF2C4065)
+val GlimmerGold = Color(0xFFFFD700)
 
-val Purple40 = Color(0xFF6650a4)
-val PurpleGrey40 = Color(0xFF625b71)
-val Pink40 = Color(0xFF7D5260)
+val TropicalSeaStart = Color(0xFF4EC0C4)
+val TropicalSeaEnd = Color(0xFF1A535C)
+
+val SunSandYellow = Color(0xFFC49524)
+
+val SeaFoamWhite = Color(0xFFF7FFF7)
+
+val TranslucentBg = TropicalSeaEnd.copy(alpha = 0.9f)
+
+val OceanGray = Color(0xFFB0C4C4)

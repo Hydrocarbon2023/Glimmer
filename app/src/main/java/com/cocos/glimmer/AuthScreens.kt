@@ -34,6 +34,9 @@ import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
+import com.cocos.glimmer.ui.theme.DeepSeaEnd
+import com.cocos.glimmer.ui.theme.DeepSeaStart
+import com.cocos.glimmer.ui.theme.GlimmerGold
 
 @Composable
 fun LoginScreen(navController: NavController) {

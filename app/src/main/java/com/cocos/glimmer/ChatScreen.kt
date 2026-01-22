@@ -46,6 +46,9 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
+import com.cocos.glimmer.ui.theme.DeepSeaEnd
+import com.cocos.glimmer.ui.theme.DeepSeaStart
+import com.cocos.glimmer.ui.theme.GlimmerGold
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
