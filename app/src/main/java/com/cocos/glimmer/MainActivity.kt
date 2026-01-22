@@ -32,6 +32,9 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.navigation.compose.composable
+import androidx.navigation.compose.NavHost
+import androidx.navigation.compose.rememberNavController
 import kotlin.random.Random
 
 val DeepSeaStart = Color(0xFF0D1b2A)
@@ -76,8 +79,23 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         setContent {
             MaterialTheme {
+                val navController = rememberNavController()
+
                 val viewModel: OceanViewModel = viewModel()
-                OceanScreen(viewModel)
+
+                NavHost(navController = navController, startDestination = "login") {
+                    composable("login") {
+                        LoginScreen(navController)
+                    }
+
+                    composable("register") {
+                        RegisterScreen(navController)
+                    }
+
+                    composable("ocean") {
+                        OceanScreen(viewModel)
+                    }
+                }
             }
         }
     }

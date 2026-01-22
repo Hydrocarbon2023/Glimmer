@@ -1,0 +1,205 @@
+package com.cocos.glimmer
+
+import android.widget.Toast
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.filled.Lock
+import androidx.compose.material.icons.filled.Person
+import androidx.compose.material.icons.Icons
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.PasswordVisualTransformation
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+import androidx.navigation.NavController
+
+@Composable
+fun LoginScreen(navController: NavController) {
+    var username by remember { mutableStateOf("") }
+    var password by remember { mutableStateOf("") }
+    var context = LocalContext.current
+
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(Brush.verticalGradient(listOf(DeepSeaStart, DeepSeaEnd))),
+        contentAlignment = Alignment.Center
+    ) {
+        Column(
+            horizontalAlignment = Alignment.CenterHorizontally,
+            modifier = Modifier.padding(32.dp)
+        ) {
+            Text(
+                text = "微光漂流",
+                color = GlimmerGold,
+                fontSize = 32.sp,
+                fontWeight = FontWeight.Bold
+            )
+            Spacer(modifier = Modifier.height(16.dp))
+            Text(
+                text = "Glimmer",
+                color = Color.White.copy(alpha = 0.5f),
+                fontSize = 16.sp
+            )
+
+            Spacer(modifier = Modifier.height(48.dp))
+
+            GlimmerTextField(
+                value = username,
+                onValueChange = { username = it },
+                label = "用户名",
+                icon = Icons.Default.Person
+            )
+            Spacer(modifier = Modifier.height(16.dp))
+            GlimmerTextField(
+                value = password,
+                onValueChange = { password = it },
+                label = "密码",
+                icon = Icons.Default.Lock,
+                isPassword = true
+            )
+
+            Spacer(modifier = Modifier.height(32.dp))
+
+            Button(
+                onClick = {
+                    if (AuthManager.login(username, password)) {
+                        navController.navigate("ocean") {
+                            popUpTo("login") { inclusive = true }
+                        }
+                    } else {
+                        Toast.makeText(
+                            context,
+                            "用户名或密码错误（第一次使用？请先注册）",
+                            Toast.LENGTH_SHORT
+                        ).show()
+                    }
+                },
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = GlimmerGold,
+                    contentColor = DeepSeaStart
+                ),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(50.dp)
+            ) {
+                Text("登录", fontSize = 18.sp)
+            }
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            TextButton(
+                onClick = { navController.navigate("register") }
+            ) {
+                Text("还没有账号？立即注册", color = Color.White.copy(alpha = 0.7f))
+            }
+        }
+    }
+}
+
+@Composable
+fun RegisterScreen(navController: NavController) {
+    var username by remember { mutableStateOf("") }
+    var password by remember { mutableStateOf("") }
+    val context = LocalContext.current
+
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(Brush.verticalGradient(listOf(DeepSeaStart, DeepSeaEnd))),
+        contentAlignment = Alignment.Center
+    ) {
+        Column(
+            horizontalAlignment = Alignment.CenterHorizontally,
+            modifier = Modifier.padding(32.dp)
+        ) {
+            Text(
+                text = "加入微光",
+                color = Color.White,
+                fontSize = 28.sp,
+                fontWeight = FontWeight.Bold
+            )
+            Spacer(modifier = Modifier.height(48.dp))
+
+            GlimmerTextField(
+                value = username,
+                onValueChange = { username = it },
+                label = "请输入用户名",
+                icon = Icons.Default.Person
+            )
+            Spacer(modifier = Modifier.height(16.dp))
+            GlimmerTextField(
+                value = password,
+                onValueChange = { password = it },
+                label = "请输入密码",
+                icon = Icons.Default.Lock,
+                isPassword = true
+            )
+
+            Spacer(modifier = Modifier.height(32.dp))
+
+            Button(
+                onClick = {
+                    if (username.isNotBlank() && password.isNotBlank()) {
+                        if (AuthManager.register(username, password)) {
+                            Toast.makeText(context, "注册成功！请登录", Toast.LENGTH_SHORT).show()
+                            navController.popBackStack()
+                        } else {
+                            Toast.makeText(context, "用户名已被注册", Toast.LENGTH_SHORT).show()
+                        }
+                    } else {
+                        Toast.makeText(context, "请输入用户名和密码", Toast.LENGTH_SHORT).show()
+                    }
+                },
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = GlimmerGold,
+                    contentColor = DeepSeaStart
+                ),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(50.dp)
+            ) {
+                Text("注册", fontSize = 18.sp)
+            }
+
+            Spacer(modifier = Modifier.height(16.dp))
+            TextButton(onClick = { navController.popBackStack() }) {
+                Text("返回登录", color = Color.White.copy(alpha = 0.5f))
+            }
+        }
+    }
+}
+
+@Composable
+fun GlimmerTextField(
+    value: String,
+    onValueChange: (String) -> Unit,
+    label: String,
+    icon: androidx.compose.ui.graphics.vector.ImageVector,
+    isPassword: Boolean = false
+) {
+    OutlinedTextField(
+        value = value,
+        onValueChange = onValueChange,
+        label = { Text(label, color = Color.White.copy(alpha = 0.7f)) },
+        leadingIcon = { Icon(icon, contentDescription = null, tint = GlimmerGold) },
+        visualTransformation = if (isPassword) PasswordVisualTransformation() else
+            androidx.compose.ui.text.input.VisualTransformation.None,
+        colors = OutlinedTextFieldDefaults.colors(
+            focusedBorderColor = GlimmerGold,
+            unfocusedBorderColor = Color.White.copy(alpha = 0.3f),
+            focusedTextColor = Color.White,
+            unfocusedTextColor = Color.White,
+            cursorColor = GlimmerGold
+        ),
+        singleLine = true,
+        modifier = Modifier.fillMaxWidth()
+    )
+}
