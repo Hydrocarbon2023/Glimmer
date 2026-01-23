@@ -2,6 +2,7 @@ package com.cocos.glimmer
 
 import androidx.compose.runtime.snapshotFlow
 import androidx.lifecycle.ViewModel
+import com.google.firebase.firestore.FieldValue
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.Query
 import kotlin.random.Random
@@ -112,5 +113,20 @@ class OceanViewModel : ViewModel() {
 
     fun clearMessage() {
         _uiState.update { it.copy(message = null) }
+    }
+
+    fun likeBottle(bottle: Bottle) {
+        if (_uiState.value.likedBottleIds.contains(bottle.id)) return
+
+        _uiState.update { state ->
+            val newLiked = state.likedBottleIds + bottle.id
+            state.copy(likedBottleIds = newLiked)
+        }
+
+        db.collection("bottles").document(bottle.id)
+            .update("likes", FieldValue.increment(1))
+            .addOnFailureListener {
+                _uiState.update { it.copy(message = "点赞失败，请检查网络") }
+            }
     }
 }

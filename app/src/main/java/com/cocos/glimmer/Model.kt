@@ -18,7 +18,8 @@ data class OceanUIState(
     val bottles: List<Bottle> = emptyList(),
     val dailyPicksLeft: Int = 5,
     val isLoading: Boolean = false,
-    val message: String? = null
+    val message: String? = null,
+    val likedBottleIds: Set<String> = emptySet()
 )
 
 data class ChatMessage(

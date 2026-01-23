@@ -264,9 +264,13 @@ fun OceanScreen(viewModel: OceanViewModel, navController: NavController) {
         }
 
         pickedBottle?.let { bottle ->
+            val isLiked = uiState.likedBottleIds.contains(bottle.id)
+
             ReadDialog(
                 bottle = bottle,
                 navController = navController,
+                isLiked = isLiked,
+                onLike = { viewModel.likeBottle(bottle) },
                 onDismiss = { pickedBottle = null }
             )
         }
@@ -350,7 +354,13 @@ fun WriteDialog(onDismiss: () -> Unit, onSend: (String) -> Unit) {
 }
 
 @Composable
-fun ReadDialog(bottle: Bottle, navController: NavController, onDismiss: () -> Unit) {
+fun ReadDialog(
+    bottle: Bottle,
+    navController: NavController,
+    isLiked: Boolean,
+    onLike: () -> Unit,
+    onDismiss: () -> Unit
+) {
     AlertDialog(
         onDismissRequest = onDismiss,
         containerColor = TranslucentBg,
@@ -399,13 +409,15 @@ fun ReadDialog(bottle: Bottle, navController: NavController, onDismiss: () -> Un
             ) {
                 IconButton(
                     onClick = {
-                        SimulationDB.likeBottle(bottle)
+                        if (!isLiked) {
+                            onLike()
+                        }
                     },
                     modifier = Modifier.size(48.dp)
                         .background(Color.White.copy(0.1f), CircleShape)
                 ) {
                     Icon(
-                        imageVector = Icons.Default.FavoriteBorder,
+                        imageVector = if (isLiked) Icons.Default.Favorite else Icons.Default.FavoriteBorder,
                         contentDescription = "Like",
                         tint = CoralPink
                     )
