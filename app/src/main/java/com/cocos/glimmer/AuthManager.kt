@@ -1,22 +1,33 @@
 package com.cocos.glimmer
 
+import com.google.firebase.auth.FirebaseAuth
+
 object AuthManager {
-    private val users = mutableMapOf<String, String>()
+    private val auth = FirebaseAuth.getInstance()
 
-    var currentUser: String? = null
+    val currentUserId: String?
+        get() = auth.currentUser?.uid
 
-    fun register(username: String, password: String): Boolean {
-        if (users.containsKey(username)) return false
-        users[username] = password
-        currentUser = username
-        return true
+    val currentUser: String?
+        get() = auth.currentUser?.email?.substringBefore("@")
+
+    fun register(username: String, pass: String, onSuccess: () -> Unit, onError: (String) -> Unit) {
+        val email = if (username.contains("@")) username else "$username@glimmer.com"
+
+        auth.createUserWithEmailAndPassword(email, pass)
+            .addOnSuccessListener { onSuccess() }
+            .addOnFailureListener { onError(it.message ?: "注册失败😞") }
     }
 
-    fun login(username: String, password: String): Boolean {
-        val success = users[username] == password
-        if (success) {
-            currentUser = username
-        }
-        return success
+    fun login(username: String, pass: String, onSuccess: () -> Unit, onError: (String) -> Unit) {
+        val email = if (username.contains("@")) username else "$username@glimmer.com"
+
+        auth.signInWithEmailAndPassword(email, pass)
+            .addOnSuccessListener { onSuccess() }
+            .addOnFailureListener { onError(it.message ?: "登录失败😡") }
+    }
+
+    fun logout() {
+        auth.signOut()
     }
 }

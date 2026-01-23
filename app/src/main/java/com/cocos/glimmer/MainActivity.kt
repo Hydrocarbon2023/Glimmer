@@ -1,5 +1,6 @@
 package com.cocos.glimmer
 
+import android.annotation.SuppressLint
 import android.os.Bundle
 import android.widget.Toast
 import androidx.activity.ComponentActivity
@@ -163,6 +164,7 @@ class MainActivity : ComponentActivity() {
     }
 }
 
+@SuppressLint("UnusedBoxWithConstraintsScope")
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun OceanScreen(viewModel: OceanViewModel, navController: NavController) {

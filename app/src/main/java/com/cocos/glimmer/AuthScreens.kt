@@ -9,11 +9,13 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Lock
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
@@ -42,6 +44,7 @@ import com.cocos.glimmer.ui.theme.GlimmerGold
 fun LoginScreen(navController: NavController) {
     var username by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
+    var isLoading by remember { mutableStateOf(false) }
     var context = LocalContext.current
 
     Box(
@@ -88,27 +91,44 @@ fun LoginScreen(navController: NavController) {
 
             Button(
                 onClick = {
-                    if (AuthManager.login(username, password)) {
-                        navController.navigate("ocean") {
-                            popUpTo("login") { inclusive = true }
-                        }
+                    if (username.isNotBlank() && password.isNotBlank()) {
+                        isLoading = true
+                        AuthManager.login(username, password,
+                            onSuccess = {
+                                isLoading = false
+                                navController.navigate("ocean") {
+                                    popUpTo("login") { inclusive = true }
+                                }
+                            },
+                            onError = { errorMsg ->
+                                isLoading = false
+                                Toast.makeText(context, "登陆失败：$errorMsg", Toast.LENGTH_SHORT).show()
+                            }
+                        )
                     } else {
-                        Toast.makeText(
-                            context,
-                            "用户名或密码错误（第一次使用？请先注册）",
-                            Toast.LENGTH_SHORT
-                        ).show()
+                        Toast.makeText(context, "请输入用户名和密码", Toast.LENGTH_SHORT).show()
                     }
                 },
+                enabled = !isLoading,
                 colors = ButtonDefaults.buttonColors(
                     containerColor = GlimmerGold,
-                    contentColor = DeepSeaStart
+                    contentColor = DeepSeaStart,
+                    disabledContainerColor = GlimmerGold.copy(0.5f),
+                    disabledContentColor = DeepSeaStart.copy(0.5f)
                 ),
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(50.dp)
             ) {
-                Text("登录", fontSize = 18.sp)
+                if (isLoading) {
+                    CircularProgressIndicator(
+                        modifier = Modifier.size(24.dp),
+                        color = DeepSeaStart,
+                        strokeWidth = 2.dp
+                    )
+                } else {
+                    Text("登录", fontSize = 18.sp)
+                }
             }
 
             Spacer(modifier = Modifier.height(16.dp))
@@ -126,6 +146,7 @@ fun LoginScreen(navController: NavController) {
 fun RegisterScreen(navController: NavController) {
     var username by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
+    var isLoading by remember { mutableStateOf(false) }
     val context = LocalContext.current
 
     Box(
@@ -156,7 +177,7 @@ fun RegisterScreen(navController: NavController) {
             GlimmerTextField(
                 value = password,
                 onValueChange = { password = it },
-                label = "请输入密码",
+                label = "请输入密码（至少6位）",
                 icon = Icons.Default.Lock,
                 isPassword = true
             )
@@ -166,25 +187,44 @@ fun RegisterScreen(navController: NavController) {
             Button(
                 onClick = {
                     if (username.isNotBlank() && password.isNotBlank()) {
-                        if (AuthManager.register(username, password)) {
-                            Toast.makeText(context, "注册成功！请登录", Toast.LENGTH_SHORT).show()
-                            navController.popBackStack()
-                        } else {
-                            Toast.makeText(context, "用户名已被注册", Toast.LENGTH_SHORT).show()
-                        }
+                        isLoading = true
+                        AuthManager.register(username, password,
+                            onSuccess = {
+                                isLoading = false
+                                Toast.makeText(context, "注册成功！请登录", Toast.LENGTH_SHORT).show()
+                                navController.navigate("ocean") {
+                                    popUpTo("register") { inclusive = true }
+                                }
+                            },
+                            onError = { errorMsg ->
+                                isLoading = false
+                                Toast.makeText(context, errorMsg, Toast.LENGTH_SHORT).show()
+                            }
+                        )
                     } else {
                         Toast.makeText(context, "请输入用户名和密码", Toast.LENGTH_SHORT).show()
                     }
                 },
+                enabled = !isLoading,
                 colors = ButtonDefaults.buttonColors(
                     containerColor = GlimmerGold,
-                    contentColor = DeepSeaStart
+                    contentColor = DeepSeaStart,
+                    disabledContainerColor = GlimmerGold.copy(0.5f),
+                    disabledContentColor = DeepSeaStart.copy(0.5f)
                 ),
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(50.dp)
             ) {
-                Text("注册", fontSize = 18.sp)
+                if (isLoading) {
+                    CircularProgressIndicator(
+                        modifier = Modifier.size(24.dp),
+                        color = DeepSeaStart,
+                        strokeWidth = 2.dp
+                    )
+                } else {
+                    Text("注册", fontSize = 18.sp)
+                }
             }
 
             Spacer(modifier = Modifier.height(16.dp))

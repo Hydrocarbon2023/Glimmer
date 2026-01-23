@@ -10,7 +10,8 @@ data class Bottle(
     val senderName: String = "Anonymous",
     val moodColor: Long = 0xFFFFD700,
     var likes: Int = 0,
-    val isMine: Boolean = false
+    val isMine: Boolean = false,
+    val timestamp: Long = System.currentTimeMillis()
 )
 
 data class OceanUIState(

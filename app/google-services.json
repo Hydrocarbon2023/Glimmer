@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "642847150709",
+    "project_id": "glimmer-app-1fcf0",
+    "storage_bucket": "glimmer-app-1fcf0.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:642847150709:android:3dfd48413c00794a7a9e3c",
+        "android_client_info": {
+          "package_name": "com.cocos.glimmer"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDzw1KNF4n_fdlMQFgqM_PwZL_ZWnjBDxY"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
